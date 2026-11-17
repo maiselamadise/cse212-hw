@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 public static class SetsAndMaps
@@ -21,8 +23,31 @@ public static class SetsAndMaps
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
     public static string[] FindPairs(string[] words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        // Each word is compared against the set of words already seen, so every
+        // lookup/insert is O(1) and the whole method is O(n).
+        var seen = new HashSet<string>();
+        var pairs = new List<string>();
+
+        foreach (var word in words)
+        {
+            // Words like "aa" can never pair with another word (no duplicates).
+            if (word[0] == word[1])
+            {
+                continue;
+            }
+
+            var reversed = string.Concat(word[1], word[0]);
+            if (seen.Contains(reversed))
+            {
+                pairs.Add($"{word} & {reversed}");
+            }
+            else
+            {
+                seen.Add(word);
+            }
+        }
+
+        return pairs.ToArray();
     }
 
     /// <summary>
@@ -42,7 +67,13 @@ public static class SetsAndMaps
         foreach (var line in File.ReadLines(filename))
         {
             var fields = line.Split(",");
-            // TODO Problem 2 - ADD YOUR CODE HERE
+            if (fields.Length < 4)
+            {
+                continue; // skip blank/malformed lines
+            }
+
+            var degree = fields[3].Trim(); // 4th column
+            degrees[degree] = degrees.GetValueOrDefault(degree) + 1;
         }
 
         return degrees;
@@ -66,8 +97,33 @@ public static class SetsAndMaps
     /// </summary>
     public static bool IsAnagram(string word1, string word2)
     {
-        // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        // Count the letters of word1 (ignoring spaces and case), then use up
+        // those counts with the letters of word2. O(n) with one lookup per letter.
+        var counts = new Dictionary<char, int>();
+        var length1 = 0;
+        var length2 = 0;
+
+        foreach (var c in word1)
+        {
+            if (c == ' ') continue;
+            ref var count = ref CollectionsMarshal.GetValueRefOrAddDefault(counts, char.ToLower(c), out _);
+            count++;
+            length1++;
+        }
+
+        foreach (var c in word2)
+        {
+            if (c == ' ') continue;
+            length2++;
+            ref var count = ref CollectionsMarshal.GetValueRefOrNullRef(counts, char.ToLower(c));
+            if (Unsafe.IsNullRef(ref count) || count == 0)
+            {
+                return false; // letter missing, or word2 has more of it than word1
+            }
+            count--;
+        }
+
+        return length1 == length2;
     }
 
     /// <summary>
@@ -101,6 +157,8 @@ public static class SetsAndMaps
         // on those classes so that the call to Deserialize above works properly.
         // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
         // 3. Return an array of these string descriptions.
-        return [];
+        return featureCollection.Features
+            .Select(f => $"{f.Properties.Place} - Mag {f.Properties.Mag}")
+            .ToArray();
     }
 }

@@ -32,7 +32,7 @@ public class Maze
     /// </summary>
     public void MoveLeft()
     {
-        // FILL IN CODE
+        Move(0, -1, 0);
     }
 
     /// <summary>
@@ -41,7 +41,7 @@ public class Maze
     /// </summary>
     public void MoveRight()
     {
-        // FILL IN CODE
+        Move(1, 1, 0);
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class Maze
     /// </summary>
     public void MoveUp()
     {
-        // FILL IN CODE
+        Move(2, 0, -1);
     }
 
     /// <summary>
@@ -59,7 +59,23 @@ public class Maze
     /// </summary>
     public void MoveDown()
     {
-        // FILL IN CODE
+        Move(3, 0, 1);
+    }
+
+    /// <summary>
+    /// Shared movement logic. directionIndex is the position in the
+    /// [left, right, up, down] array. y=1 is the top row, so moving up
+    /// decreases y and moving down increases it.
+    /// </summary>
+    private void Move(int directionIndex, int dx, int dy)
+    {
+        if (!_mazeMap[(_currX, _currY)][directionIndex])
+        {
+            throw new InvalidOperationException("Can't go that way!");
+        }
+
+        _currX += dx;
+        _currY += dy;
     }
 
     public string GetStatus()
